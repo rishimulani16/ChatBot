@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Ollama Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 20px auto;
+        }
+
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .user {
+            text-align: right;
+            margin: 5px 0;
+        }
+
+        .bot {
+            text-align: left;
+            margin: 5px 0;
+        }
+
+        .msg {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 6px;
+            max-width: 80%;
+        }
+
+        .user .msg {
+            background-color: #daf1ff;
+        }
+
+        .bot .msg {
+            background-color: #f0f0f0;
+        }
+
+        #input-area {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        #message {
+            flex: 1;
+            padding: 6px;
+        }
+
+        #send {
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Simple LangChain + Ollama Chatbot</h2>
+    <div id="chat"></div>
+    <div id="input-area">
+        <input id="message" type="text" placeholder="Type your message" />
+        <button id="send">Send</button>
+    </div>
+    <script>
+        const chatDiv = document.getElementById("chat");
+        const messageInput = document.getElementById("message");
+        const sendButton = document.getElementById("send");
+        const sessionId = "demo-session";
+
+        function addMessage(text, sender) {
+            const wrapper = document.createElement("div");
+            wrapper.className = sender;
+            const bubble = document.createElement("div");
+            bubble.className = "msg";
+            bubble.textContent = text;
+            wrapper.appendChild(bubble);
+            chatDiv.appendChild(wrapper);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            addMessage(text, "user");
+            messageInput.value = "";
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text, session_id: sessionId })
+            });
+            const data = await res.json();
+            addMessage(data.answer, "bot");
+        }
+
+        sendButton.addEventListener("click", sendMessage);
+        messageInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") sendMessage();
+        });
+    </script>
+</body>
+
+</html>
